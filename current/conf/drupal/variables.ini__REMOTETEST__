@@ -1,0 +1,3 @@
+[default]
+environment_indicator_text="RECETTE"
+environment_indicator_color="orange"

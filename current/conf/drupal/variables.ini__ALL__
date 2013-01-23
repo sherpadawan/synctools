@@ -1,0 +1,13 @@
+[default]
+clean_url=1
+show_memcache_statistics=0
+cache=1
+block_cache=1
+preprocess_js=1
+preprocess_css=1
+error_level=0 
+dev_mem=0
+dev_timer=0
+dev_query=0
+test[] = "toto"
+test[] = "tutu"

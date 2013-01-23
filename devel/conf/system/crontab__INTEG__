@@ -1,0 +1,9 @@
+# Crontab
+
+SHELL=/bin/sh
+MAILTO=olcot@smile.fr
+drushcro=n"/usr/bin/drush"
+
+# m h dom mon dow user  command
+0 7-22 * * * export ENV=INTEG;/bin/bash /var/www/biu-sorbonne/scripts/backup_db.sh dump_sorbonne-intranet_biu-sorbonne-$(date +\%Y\%m\%d\%H\%M).sql biu_sorbonne  &> /var/log/biu-sorbonne.cron.log
+0 0 1,15 * * export ENV=INTEG;/bin/bash /var/www/biu-sorbonne/scripts/clean_backup.sh 10 &> /var/log/biu-sorbonne.cron.log

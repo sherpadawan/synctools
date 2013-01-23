@@ -1,0 +1,11 @@
+/usr/local/solr/logs/solr-output.log
+{
+    daily
+    rotate 33
+    missingok
+    notifempty
+    compress
+    delaycompress
+    copytruncate
+    dateext
+}

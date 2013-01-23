@@ -1,0 +1,12 @@
+[default]
+environment_indicator_text="DEVEL"
+environment_indicator_color="#1EFC01"
+cache=1
+block_cache=1
+preprocess_js=0
+preprocess_css=0
+error_level=2
+dev_mem=1
+dev_timer=1
+dev_query=1
+

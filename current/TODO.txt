@@ -1,0 +1,11 @@
+#1 
+Deporter la configuration dans le repertoire conf/ pour permettre la mise a jour de scripts 
+sans modifier la configuration du projet.
+  -> la configuration doit pouvoir se faire a la spbuilder dans le fichier project.properties
+     (developper qqch qui fait des export shell pour utiliser la configuration porject.properties, voir
+      spbuilder config manager)
+
+
+#2
+Support Redhat
+

@@ -1,0 +1,10 @@
+# Crontab
+
+SHELL=/bin/sh
+MAILTO=myproject@smile.fr
+drushcron="/usr/bin/drush"
+
+# m h dom mon dow user  command
+
+# Sample use of SF_BIN var : 
+# 0 0 * * * $SF_BIN core-cron --root=/var/www/myproject/myproject/trunk/src

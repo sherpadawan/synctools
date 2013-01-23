@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="biu-sorbonne" default="help" basedir=".">
+  <property file="project.properties" />
+  <!-- Your custom targets here if needed !-->
+
+  <patternset id="sources.drupal">
+    <include name="sites/default/settings.php*" />
+    <include name="sites/sites.php*" />
+  </patternset>
+
+  <patternset id="sources.biu-sorbonne.check">
+    <include name="sites/default/**/*.php" />
+    <include name="sites/all/modules/myproject/**/*.php" />
+    <include name="sites/all/modules/myproject/**/*.module" />
+    <include name="sites/all/modules/myproject/**/*.install" />
+    <include name="sites/all/modules/smile/**/*.php" />
+    <include name="sites/all/modules/smile/**/*.module" />
+    <include name="sites/all/modules/smile/**/*.install" />
+  </patternset>
+
+  <taskdef classname="lib.Help" name="help" classpath="." />
+
+  <target name="help:help">
+    <help />
+    <description text="Shows this help." />
+  </target>
+  <target name="h:h" depends="help:help">
+    <description text="Alias of help:help." />
+  </target>
+
+  <!-- Only there so that phing doesn't crash. -->
+  <taskdef classname="lib.Description" name="description" classpath="." />
+
+  <taskdef classname="lib.TestTask" name="test" classpath="." />
+
+  <target name="test:test">
+    <test />
+    <description text="Test task to show how to create them." />
+  </target>
+
+  <taskdef classname="lib.SyncTask" name="sync" classpath="." />
+
+  <target name="phpcs" description="Generate checkstyle.xml using PHP_CodeSniffer">
+    <exec executable="phpcs">
+      <arg line="--report=checkstyle --report-file=${basedir}/build/logs/checkstyle.xml --standard=build/phpcs.xml ${source}/" />
+    </exec>
+  </target>
+
+  <target name="sync:all">
+    <sync type="all" />
+    <description text="Syncs the whole environment." />
+  </target>
+  <target name="s:a" depends="sync:all">
+    <description text="Alias of sync:all." />
+  </target>
+
+  <target name="sync:src">
+    <sync type="src" />
+    <description text="Syncs the sources of the project." />
+  </target>
+  <target name="s:s" depends="sync:src">
+    <description text="Alias of sync:src." />
+  </target>
+
+  <target name="s:db" depends="sync:db" />
+  <target name="sync:db">
+    <sync type="db" site="${site}" />
+  </target>
+
+  <target name="s:f" depends="sync:files" />
+  <target name="sync:files">
+    <sync type="files" site="${site}" />
+  </target>
+
+  <taskdef classname="lib.Cache" name="cache" classpath="." />
+
+  <target name="c:c" depends="cache:clear" />
+  <target name="cache:clear">
+    <cache option="clear" />
+  </target>
+
+  <target name="c:a" depends="cache:all" />
+  <target name="cache:all">
+    <cache option="all" />
+  </target>
+
+  <taskdef classname="lib.Watchdog" name="watchdog" classpath="." />
+
+  <target name="w:l" depends="watchdog:list" />
+  <target name="watchdog:list">
+    <watchdog option="list" />
+  </target>
+
+  <target name="w:s" depends="watchdog:show" />
+  <target name="watchdog:show">
+    <watchdog option="show" />
+  </target>
+
+  <!-- Do not edit bellow this line -->
+  <import file="${PHP_LIB}/spbuilder/build.xml" />
+</project>

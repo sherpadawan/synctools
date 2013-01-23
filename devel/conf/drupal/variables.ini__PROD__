@@ -1,0 +1,3 @@
+[default]
+environment_indicator_text="PRODUCTION"
+environment_indicator_color="red"

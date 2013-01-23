@@ -1,0 +1,68 @@
+NameVirtualHost *:81
+<VirtualHost *:81>
+    ServerName www.myproject.com
+    DocumentRoot /var/www/myproject/src
+    <Directory "/var/www/myproject/src">
+
+        AllowOverride None 
+        Order Allow,Deny
+        Allow From All 
+
+
+        # Make Drupal handle any 404 errors.
+        ErrorDocument 404 /index.php
+
+        #########################################################################
+        # mod_expires
+        #########################################################################
+        ExpiresActive On
+        ExpiresByType image/gif "access plus 1 day"
+        ExpiresByType image/jpg "access plus 1 day"
+        ExpiresByType image/jpeg "access plus 1 day"
+        ExpiresByType image/png "access plus 1 day"
+        ExpiresByType image/x-icon "access plus 1 day"
+        ExpiresByType text/css "access plus 1 day"
+        ExpiresByType application/x-javascript "access plus 1 day"
+        ExpiresByType application/x-shockwave-flash "access plus 1 day"
+
+        <FilesMatch \.php$>
+            ExpiresActive Off
+        </FilesMatch>
+
+        RewriteEngine on
+        RewriteRule "(^|/)\." - [F]
+        
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !=/favicon.ico
+        RewriteRule ^ index.php [L]
+
+        # Serve gzip compressed CSS files if they exist and the client accepts gzip.
+        RewriteCond %{HTTP:Accept-encoding} gzip
+        RewriteCond %{REQUEST_FILENAME}\.gz -s
+        RewriteRule ^(.*)\.css $1\.css\.gz [QSA]
+
+        # Serve gzip compressed JS files if they exist and the client accepts gzip.
+        RewriteCond %{HTTP:Accept-encoding} gzip
+        RewriteCond %{REQUEST_FILENAME}\.gz -s
+        RewriteRule ^(.*)\.js $1\.js\.gz [QSA]
+
+        # Serve correct content types, and prevent mod_deflate double gzip.
+        RewriteRule \.css\.gz$ - [T=text/css,E=no-gzip:1]
+        RewriteRule \.js\.gz$ - [T=text/javascript,E=no-gzip:1]
+
+        <FilesMatch "(\.js\.gz|\.css\.gz)$">
+          # Serve correct encoding type.
+          Header set Content-Encoding gzip
+          # Force proxies to cache gzipped & non-gzipped css/js files separately.
+          Header append Vary Accept-Encoding
+        </FilesMatch>
+
+    </Directory>
+    <LocationMatch "^/$">
+        Header unset Accept-Encoding
+    </LocationMatch>
+
+</VirtualHost>
+
+

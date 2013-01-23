@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          solr
+# Required-Start:
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Solr
+# Description:       Solr search engine
+### END INIT INFO
+
+. /etc/rc.d/init.d/functions
+
+SOLR_ROOT=/usr/local/solr
+DAEMON=$SOLR_ROOT/bin/solr.sh
+USER=solr
+PIDFILE=/var/run/solr.sh.pid
+
+if [ ! -x "$DAEMON" ]; then
+echo "FATAL ERROR: Solr daemon: $DAEMON is not executable. Exiting."
+exit 0
+fi
+
+case "$1" in
+start)
+if [ ! -e $PIDFILE ]; then
+echo "Starting the solr daemon..."
+su -p -s /bin/sh $USER -c "$DAEMON" > /dev/null 2>&1 &
+RETVAL=$?
+[ $RETVAL = 0 ] && echo $! > $PIDFILE
+else
+echo "Solr already started..."
+fi
+;;
+stop)
+echo "Stopping solr daemon..."
+killproc $DAEMON
+;;
+force-reload|restart)
+$0 stop
+sleep 5
+$0 start
+;;
+*)
+echo "Usage: $0 {start|stop|restart|force-reload}"
+exit 1
+esac
+
+exit 0

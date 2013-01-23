@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+### BEGIN INIT INFO
+# Provides:          solr
+# Required-Start:    
+# Required-Stop:     
+# Should-Start:      
+# Should-Stop:       
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Solr
+# Description:       Solr search engine
+### END INIT INFO
+
+DAEMON=/usr/local/solr/bin/solr.sh
+USER=solr
+PIDFILE=/var/run/solr.pid
+
+if [ ! -x "$DAEMON" ]; then
+echo "FATAL ERROR: Solr daemon: $DAEMON is not executable. Exiting."
+exit 0
+fi
+
+case "$1" in
+start)
+echo -n "Starting $DAEMON : "
+if start-stop-daemon --quiet --stop --signal 0 --pidfile $PIDFILE 2>&1 > /dev/null
+then
+echo " [already running]"
+else
+/sbin/start-stop-daemon --start --quiet --make-pidfile --pidfile $PIDFILE --background --chuid $USER --exec $DAEMON -- $OPTIONS
+echo "."
+fi
+;;
+stop)
+echo -n "Stopping $DAEMON : "
+if start-stop-daemon --quiet --stop --signal 0 --pidfile $PIDFILE  2>&1 > /dev/null
+then
+start-stop-daemon --quiet --stop --pidfile $PIDFILE
+echo "."
+else
+echo " [not running]";
+fi
+;;
+force-reload|restart)
+$0 stop
+sleep 5
+$0 start
+;;
+*)
+echo "Usage: $0 {start|stop|restart|force-reload}"
+exit 1
+esac
+
+exit 0
