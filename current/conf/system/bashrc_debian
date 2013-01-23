@@ -1,0 +1,60 @@
+#project specific part
+export ENV=DEV
+export PROJECT_ROOT=
+
+if [ -d $PROJECT_ROOT  ];then
+  cd $PROJECT_ROOT
+fi
+
+#Timestamps dans l historique :
+export HISTTIMEFORMAT="%Y/%m/%d - %H:%M:%S "
+export HISTIGNORE=ls
+
+# pour ne pas effacer l'ecran
+export LESS="-X"
+export PAGER=/usr/bin/less
+export EDITOR=vi
+
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+alias ls='/bin/ls -CF'
+alias more='less'
+
+# Define graphic term title bar
+case $TERM in
+    xterm*|rxvt)
+        TITLEBAR='\[\e]0;\h:\w\a\]';
+        ;;
+    *)
+        TITLEBAR="";
+        ;;
+esac
+
+# Prompt rouge gras
+# export PS1=$TITLEBAR'\[\e[1;31m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Prompt rouge pas gras
+# export PS1=$TITLEBAR'\[\e[0;31m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Prompt vert
+export PS1=$TITLEBAR'\[\e[0;32m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Prompt jaune
+# export PS1=$TITLEBAR'\[\e[0;33m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Prompt violet
+# export PS1=$TITLEBAR'\[\e[0;35m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Prompt bleu clair
+# export PS1=$TITLEBAR'\[\e[0;36m\]\h:\w\[\e[$(($??7:0));37m\]\$\[\e[0;0m\] '
+# Version simplifiee du prompt rouge
+# export PS1=$TITLEBAR'\[\e[0;31m\]\h:\w\[\e[0;0m\]\$ '
+
+umask 022
+
+export LS_OPTIONS='--color=auto'
+eval `dircolors`
+alias ls='ls $LS_OPTIONS'
+alias ll='ls $LS_OPTIONS -l'
+alias l='ls $LS_OPTIONS -lA'
+
+# Tabulation roulaize 
+[ -f /etc/bash_completion ] && . /etc/bash_completion
+
+cd /var/www/snowleader/magento
