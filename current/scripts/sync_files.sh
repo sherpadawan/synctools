@@ -2,8 +2,6 @@
 canonical_filename=`readlink -f $0`
 source $(dirname $canonical_filename)/include/config.sh
 
-
-
 site=$1
 if [ -z "$1" ];then
     echo "[ERROR] No site specified ..."

@@ -28,20 +28,30 @@ class GNBUtilsConfig
     'db.user.name'=>'LOCAL_MYSQL_USER', 
     'db.user.pass'=>'LOCAL_MYSQL_PASS',
     'sync.remote'=>'REMOTE', 
+    'sync.remote.source'=>'REMOTE_ENV', 
     'sync.remote.servername'=>'REMOTE_SERVERNAME', 
-    'sync.remote.user.login'=>'REMOTE_USER', 
-    'sync.remote.db.user.name'=>'REMOTE_MYSQL_USER', 
-    'sync.remote.db.user.pass'=>'REMOTE_MYSQL_PASS',
+    'sync.remote.user.login' => 'REMOTE_USER',
+    'sync.remote.db.user.name' => 'REMOTE_MYSQL_USER',
+    'sync.remote.db.user.pass' => 'REMOTE_MYSQL_PASS',
     'services.varnish' => 'VARNISH_USE',
     'services.memchached' => 'MEMCACHED_USE',
     'services.solr' => 'SOLR_USE',
   );
 
+  protected $properties;
+
   protected static $instance;
 
   protected function __construct() {
-    $this->checkCurrentEnv();
+    try {
+      $this->checkCurrentEnv();
+    } catch(Exception $e) {
+      echo $e->getMessage();
+      exit(1);
+    }
+    $this->getProjectProperties();
   }
+
 
   /**
    * @return 
@@ -53,6 +63,13 @@ class GNBUtilsConfig
       self::$instance = new $c;
     }
     return self::$instance;
+  }
+
+  public function getProjectProperties($recursive=true) {
+      if (empty($this->properties)) {
+          $this->properties = $this->loadProjectProperties($recursive);
+      }
+      return $this->properties;
   }
 
   /**
@@ -96,7 +113,7 @@ class GNBUtilsConfig
    * @params boolean $section 
    * @return array of properties
    */
-  public function parseProjectProperties($section=false) {
+  public function loadProjectProperties($section=false) {
       $dir = __DIR__;
       $properties = parse_ini_file($dir.'/../project.properties', $section);
       if (empty($properties)) {
@@ -119,6 +136,17 @@ class GNBUtilsConfig
     $propertiesComputed = array_merge($properties['ALL'], $envProperties);
     $propertiesComputed = $propertiesComputed + $propertiesAll;
     $propertiesComputed = $propertiesComputed + $properties['PROJECT'];
+
+    //implements flexible way for sync from remote.
+    //sync.remote.source is defined then coonnection settings are retrieved from it
+    if ( !empty($envProperties['sync.remote']) && !empty($envProperties['sync.remote.source'])) {
+      $remoteEnvName = $envProperties['sync.remote.source'];
+      if ( in_array($remoteEnvName, $this->defaultEnvs) ) {
+        if ($envProperties[$remoteEnvName]) {
+          $propertiesComputed = array_merge( $propertiesComputed, $this->getRemoteEnvConnectionSettings($envProperties));
+        }
+      }
+    }
     $propertiesToExport = array();
     foreach($this->exportMap as $key=>$value) {
       if( !isset($propertiesComputed[$key]) || $propertiesComputed[$key] === '' ) {
@@ -136,8 +164,7 @@ class GNBUtilsConfig
    * @return string of bash command
    */
   public function export() {
-      $properties = $this->parseProjectProperties(true);
-      $propertiesToExport = $this->computeProjectProperties($properties);
+      $propertiesToExport = $this->computeProjectProperties($this->properties);
       $exportString = '';
       foreach($propertiesToExport as $varName=>$value) {
           $exportString .= 'export '.$varName.'='.addslashes($value).';';
@@ -148,6 +175,31 @@ class GNBUtilsConfig
   public function __toString() {
     echo $this->export();
   }
+
+  /**
+   *
+   */
+  public function getRemoteEnvConnectionSettings($envName) {
+    $settings = array();
+    if (empty($this->properties[$envName]['system.user.login'])) {
+      $this->log('Missing required '.$envName.'project.properties settings (system.user.login)', 'ERROR');
+    }
+    if (empty($this->properties[$envName]['system.servername'])) {
+      $this->log('Missing required '.$envName.' project.properties settings (system.user.login)', 'ERROR');
+    }
+    if (empty($this->properties[$envName]['db.user.pass'])) {
+      $this->log('Missing required '.$envName.' project.properties settings (db.user.pass)', 'ERROR');
+    }
+    if (empty($this->properties[$envName]['db.user.name'])) {
+      $this->log('Missing required '.$envName.' project.properties settings (db.user.name)', 'ERROR');
+    }
+    $settings['sync.remote.user.login'] = $this->properties[$envName]['system.user.login'];
+    $settings['sync.remote.servername'] = $this->properties[$envName]['system.servername'];
+    $settings['sync.remote.db.user.pass'] = $this->properties[$envName]['db.user.pass'];
+    $settings['sync.remote.db.user.name'] = $this->properties[$envName]['db.user.name'];
+    return $settings;
+  }
+
 
 }
 
