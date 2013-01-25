@@ -24,7 +24,7 @@ INSTALL_DIR=/usr/local
 SOLR_VERSION=3.6.0
 
 function usage() {
-    echo "[USAGE] solr_install.sh [--java JAVA_HOME] [--prefix $INSTALL_DIR] [--solr-version X.X.X] [--multicore]"
+    echo "[USAGE] solr_install.sh [--java JAVA_HOME] [--prefix $INSTALL_DIR] [--solr-version X.X.X] [--multicore] [--drupal-module [search_api]]"
 }
 
 SOLR_MULTICORE=0
@@ -34,6 +34,7 @@ while [ -n "$1" ];do
         --java)JAVA_HOME=$2;shift;;
         --solr-version)SOLR_VERSION=$2;shift;;
         --multicore)SOLR_MULTICORE=1;;
+        --drupal-module)DRUPAL_MODULE=$2;shift;;
         --help)usage;exit 1;;
         *)usage;exit 1;;
     esac
@@ -51,6 +52,11 @@ if [  ! -d $JAVA_HOME ];then
     echo "[ERROR] java home does not exist $JAVA_HOME" 
     usage
     exit 1
+fi
+
+#drupal module default is search api
+if [ -z "$DRUPAL_MODULE" ];then
+  DRUPAL_MODULE=search_api
 fi
 
 SOLR_ROOT=$INSTALL_DIR/solr
@@ -100,27 +106,42 @@ tar zxf SolrPhpClient.r60.2011-05-04.tgz -C $PROJECT_SRC/sites/all/libraries/
 echo "[INFO] Drupal module install/update ?"
 cd $PROJECT_SRC
 
-if [ ! -d 'sites/all/modules/search_api'  ];then
-    drush dl search_api 
-    drush dl search_api_solr
-    drush dl search_api_facetapi
-    drush dl search_api_page
-    drush dl search_api_views
-fi    
+if [[ "$DRUPAL_MODULE" == 'search_api' ]];then
+    drush dl search_api --select 
+    drush dl search_api_solr --select
+    drush dl search_api_facetapi --select
+    drush dl search_api_page --select
+    drush dl search_api_views --select
+fi
+
+if [[ "$DRUPAL_MODULE" == 'apachesolr' ]];then
+    drush dl apachesolr --select
+    drush dl apachesolr_search --select
+    drush dl apachesolr_access --select
+fi
 
 
 for site in ${SITES[*]}
 do
+  if [ "$DRUPAL_MODULE" == 'search_api' ];then
+    echo "[WARNING] Disabling conflicting module apachesolr"
+    drush -l $site dis apachesolr 
+    drush -l $site dis apachesolr_search 
+    drush -l $site dis apachesolr_access 
+
     drush -l $site en search_api
     drush -l $site en search_api_solr
     drush -l $site en search_api_facetapi
     drush -l $site en search_api_page
     drush -l $site en search_api_views
+  else
+    echo "[WARNING] Disabling conflicting module search_api"
+    drush -l $site dis search_api -y
+    drush -l $site apachesolr --select
+    drush -l $site apachesolr_search --select
+    drush -l $site apachesolr_access --select
+  fi
 done
-
-#drush dis apachesolr
-#drush dl apachesolr
-#drush en -y apachesolr
 
 
 echo "[INFO] Prepare Solr Configuration ..."
@@ -140,13 +161,13 @@ echo "[INFO] Copying solr example configuration"
 cp -r example/* $SOLR_ROOT/
 
 echo "[INFO] Copy Drupal 7 apachesolr configuration to $SOLR_ROOT/solr/conf"
-#cp -f $PROJECT_SRC/sites/all/modules/apachesolr/solr-conf/schema-solr3x.xml $SOLR_ROOT/solr/conf/schema.xml
-#cp -f $PROJECT_SRC/sites/all/modules/apachesolr/solr-conf/solrconfig-solr3x.xml $SOLR_ROOT/solr/conf/solrconfig.xml
-#cp -f $PROJECT_SRC/sites/all/modules/apachesolr/solr-conf/protwords.txt $SOLR_ROOT/solr/conf/protwords.txt
-
-cp -f $PROJECT_SRC/sites/all/modules/search_api_solr/solr-conf/3.x/* $SOLR_ROOT/solr/conf/
-
-cp -f $PROJECT_SRC/sites/all/modules/contrib/search_api_solr/solr-conf/3.x/* $SOLR_ROOT/solr/conf/
+if [ "$DRUPAL_MODULE" == 'search_api' ];then
+  cp -f $PROJECT_SRC/sites/all/modules/search_api_solr/solr-conf/solr-3.x/* $SOLR_ROOT/solr/conf/
+  cp -f $PROJECT_SRC/sites/all/modules/contrib/search_api_solr/solr-conf/solr-3.x/* $SOLR_ROOT/solr/conf/
+else
+  cp -f $PROJECT_SRC/sites/all/modules/apachesolr/solr-conf/solr-3.x/* $SOLR_ROOT/solr/conf/
+  cp -f $PROJECT_SRC/sites/all/modules/contrib/apachesolr/solr-conf/solr-3.x/* $SOLR_ROOT/solr/conf/
+fi
 
 echo "[INFO] Install system scripts ..."
 cd $PROJECT_CONF/solr/
