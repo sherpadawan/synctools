@@ -142,9 +142,7 @@ class GNBUtilsConfig
     if ( !empty($envProperties['sync.remote']) && !empty($envProperties['sync.remote.source'])) {
       $remoteEnvName = $envProperties['sync.remote.source'];
       if ( in_array($remoteEnvName, $this->defaultEnvs) ) {
-        if ($envProperties[$remoteEnvName]) {
-          $propertiesComputed = array_merge( $propertiesComputed, $this->getRemoteEnvConnectionSettings($envProperties));
-        }
+        $propertiesComputed = array_merge( $propertiesComputed, $this->getRemoteEnvConnectionSettings($remoteEnvName));
       }
     }
     $propertiesToExport = array();
