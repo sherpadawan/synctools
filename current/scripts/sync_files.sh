@@ -10,7 +10,7 @@ fi
 
 cd $PROJECT_SRC
 echo 'Syncing sites/'$site'/files ...'
-rsync -av --delete --exclude="css" --exclude="js" --exclude="*.gz" --exclude="*.svn*" ${REMOTE_USER}@${REMOTE_SERVERNAME}:$PROJECT_SRC/sites/$site/files/*  sites/$site/files/
+rsync -rv --exclude="css" --exclude="js" --exclude="*.gz" --exclude="*.svn*" ${REMOTE_USER}@${REMOTE_SERVERNAME}:$PROJECT_SRC/sites/$site/files/*  sites/$site/files/
 
 $SCRIPTS_DIR/fix-perms.sh
 
